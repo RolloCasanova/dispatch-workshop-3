@@ -4,18 +4,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/RolloCasanova/dispatch-workshop-3/router"
 )
 
 func main() {
-	router := mux.NewRouter()
-
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/text")
-		w.Write([]byte("Hello World!"))
-	}).Methods(http.MethodGet)
+	r := router.Setup()
 
 	log.Println("Server is running on port 8080...")
-	http.ListenAndServe("localhost:8080", router)
-
+	http.ListenAndServe("localhost:8080", r)
 }
