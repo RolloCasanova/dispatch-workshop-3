@@ -4,19 +4,31 @@ import (
 	"fmt"
 
 	"github.com/RolloCasanova/dispatch-workshop-3/model"
-	"github.com/RolloCasanova/dispatch-workshop-3/service/db"
 
 	"github.com/sirupsen/logrus"
 )
 
-var logger = logrus.New()
+type dbService interface {
+	GetAllEmployees() (model.Employees, error)
+}
+type employeeUseCase struct {
+	logger    *logrus.Logger
+	dbService dbService
+}
 
-func GetAllEmployees() (model.Employees, error) {
-	logger.Info("In usecase.GetAllEmployees")
+func New(l *logrus.Logger, ds dbService) employeeUseCase {
+	return employeeUseCase{
+		logger:    l,
+		dbService: ds,
+	}
+}
 
-	employees, err := db.GetAllEmployees()
+func (eu employeeUseCase) GetAllEmployees() (model.Employees, error) {
+	eu.logger.Info("In usecase.GetAllEmployees")
+
+	employees, err := eu.dbService.GetAllEmployees()
 	if err != nil {
-		logger.Error("something bad happened in usecase.GetAllEmployees")
+		eu.logger.Error("something bad happened in usecase.GetAllEmployees")
 
 		return nil, fmt.Errorf("usecase: getting all employees: %w", err)
 	}

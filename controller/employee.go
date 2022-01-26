@@ -4,28 +4,42 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/RolloCasanova/dispatch-workshop-3/usecase"
+	"github.com/RolloCasanova/dispatch-workshop-3/model"
+
 	"github.com/sirupsen/logrus"
 	"github.com/unrolled/render"
 )
 
-var (
-	logger = logrus.New()
-	ren    = render.New()
-)
+type usecase interface {
+	GetAllEmployees() (model.Employees, error)
+}
 
-func GetAllEmployees(w http.ResponseWriter, r *http.Request) {
-	logger.Info("In controller.GetAllEmployees")
+type employeeController struct {
+	logger  *logrus.Logger
+	render  *render.Render
+	usecase usecase
+}
 
-	employees, err := usecase.GetAllEmployees()
+func New(l *logrus.Logger, r *render.Render, u usecase) *employeeController {
+	return &employeeController{
+		logger:  l,
+		render:  r,
+		usecase: u,
+	}
+}
+
+func (ec employeeController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
+	ec.logger.Info("In controller.GetAllEmployees")
+
+	employees, err := ec.usecase.GetAllEmployees()
 	if err != nil {
-		logger.Error("something failed calling controller.GetAllEmployees")
+		ec.logger.Error("something failed calling controller.GetAllEmployees")
 
 		err = fmt.Errorf("controller: getting all employees: %w", err)
-		ren.Text(w, http.StatusInternalServerError, err.Error())
+		ec.render.Text(w, http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
-	ren.JSON(w, http.StatusOK, employees)
+	ec.render.JSON(w, http.StatusOK, employees)
 }

@@ -3,15 +3,17 @@ package router
 import (
 	"net/http"
 
-	"github.com/RolloCasanova/dispatch-workshop-3/controller"
-
 	"github.com/gorilla/mux"
 )
 
-func Setup() *mux.Router {
+type controller interface {
+	GetAllEmployees(w http.ResponseWriter, r *http.Request)
+}
+
+func Setup(c controller) *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/employees", controller.GetAllEmployees).
+	router.HandleFunc("/employees", c.GetAllEmployees).
 		Methods(http.MethodGet)
 
 	return router
